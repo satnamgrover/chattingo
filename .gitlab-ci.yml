@@ -1,0 +1,28 @@
+stages:
+    - build
+    - deploy
+
+build-job:
+    stage: build
+    image: docker:latest
+    services:
+        - docker:dind
+    script:
+        - docker build -t $<your dockerhub user name>/chattingo-frontend frontend/
+        - docker build -t $<your dockerhub user name>/chattingo-backend  backend/
+        - docker login -u $<your dockerhub user name> -p $<your dockerhub personal access token>
+        - docker push $<your dockerhub user name>/chattingo-frontend:latest
+        - docker push $<your dockerhub user name>/chattingo-backend:latest
+    tags:
+        - production
+
+deploy-job:
+    stage: deploy
+    script:
+        - kubectl apply -f k8s/
+        - sleep 40
+        - sudo -E kubectl port-forward service/chattingo-frontend 80:80 --address=0.0.0.0 > /dev/null 2>&1 &
+        - kubectl port-forward service/chattingo-backend 8080:8080 --address=0.0.0.0 > /dev/null 2>&1 &
+    tags:
+        - production
+
