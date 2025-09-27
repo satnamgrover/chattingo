@@ -1,0 +1,44 @@
+# Frontend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chattingo-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chattingo-frontend
+  template:
+    metadata:
+      labels:
+        app: chattingo-frontend
+    spec:
+      containers:
+        - name: chattingo-frontend
+          image: chattingo-frontend:latest # Replace with your image repo if needed
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 80
+          env:
+            - name: REACT_APP_API_URL
+              value: "http://52.58.3.148:8080"
+            - name: REACT_APP_WS_URL
+              value: "http://52.58.3.148:8080/ws"
+            - name: REACT_APP_ENV
+              value: "development"
+            - name: REACT_APP_DEBUG
+              value: "true"
+
+# Frontend Service
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chattingo-frontend
+spec:
+  selector:
+    app: chattingo-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
